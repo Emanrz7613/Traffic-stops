@@ -1,0 +1,25 @@
+# Ignore virtual environments
+env/
+venv/
+.venv/
+
+# Ignore data files
+Officer_Traffic_Stops.csv
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Streamlit generated files
+.streamlit/
+
+# IDE files
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
