@@ -118,10 +118,10 @@ try:
                 labels = ['No Search', 'Search']
                 sizes = [probabilities[0], probabilities[1]]
                 colors = ['green', 'red']
+                
                 fig, ax = plt.subplots()
                 ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors, wedgeprops={'edgecolor': 'black'})
                 ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-                st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
                 st.pyplot(fig)
             except Exception as e:
                 st.error("An error occurred during prediction.")
