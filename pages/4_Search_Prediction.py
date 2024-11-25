@@ -1,3 +1,4 @@
+   
 import streamlit as st
 import pandas as pd
 import pickle
@@ -89,8 +90,49 @@ try:
     # Fill missing dummy variables with 0
     all_features = search_model.feature_names_in_
 
-    
-    input_data = pd.DataFrame([{k: input_features.get(k, 0) for k in all_features}])
+        # Create input data DataFrame and ensure feature names match exactly
+    input_data = pd.DataFrame([{k: input_features.get(k, 0) for k in all_features}], columns=all_features)
+
+    # Assign feature names
+    input_data.columns = all_features
+
+        # Scale numerical features
+    numerical_features = ['Driver_Age']
+    input_data[numerical_features] = scaler.transform(input_data[numerical_features])
+
+    # Predict
+    if st.button("Predict Search Conducted"):
+        if input_data.empty:
+            st.write("Please provide all required inputs before predicting.")
+        else:
+            try:
+                probabilities = search_model.predict_proba(input_data)[0]
+                prediction = search_model.predict(input_data)[0]
+
+                # Display prediction result
+                if prediction == 1:
+                    st.markdown("<h2 style='color: red;'>A search is likely to be conducted during the traffic stop.</h2>", unsafe_allow_html=True)
+                    st.markdown("<div style='text-align: center;'><img src='https://gifdb.com/images/high/police-car-lights-on-top-a2uurw8a7w28z1xm.webp' width='300' style='display: block; margin-left: auto; margin-right: auto;'></div>", unsafe_allow_html=True)
+                else:
+                    st.markdown("<h2 style='color: green; text-align: center;'>A search is not likely to be conducted during the traffic stop.</h2>", unsafe_allow_html=True)
+                    st.markdown("<div style='text-align: center;'><img src='https://gifdb.com/images/high/happy-dance-celebrate-meme-m8pmc10c5p736lcs.webp' width='300' style='display: block; margin-left: auto; margin-right: auto;'></div>", unsafe_allow_html=True)
+
+                # Display pie chart of probabilities
+                labels = ['No Search', 'Search']
+                sizes = [probabilities[0], probabilities[1]]
+                colors = ['green', 'red']
+                
+                fig, ax = plt.subplots()
+                ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors, wedgeprops={'edgecolor': 'black'})
+                ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+                st.pyplot(fig)
+            except Exception as e:
+                st.error("An error occurred during prediction.")
+
+except FileNotFoundError as e:
+    st.error("Required file not found: " + str(e))
+except Exception as e:
+    st.error("An unexpected error occurred: " + str(e))
 
     
     # Scale numerical features
