@@ -12,7 +12,7 @@ if 'page' not in st.session_state:
 
 try:
     # Load pre-trained model
-    with open('search_model.pkl', 'rb') as file:
+    with open('search_modelx.pkl', 'rb') as file:
         search_model = pickle.load(file)
 
     # Load pre-trained scaler
