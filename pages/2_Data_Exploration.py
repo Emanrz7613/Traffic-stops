@@ -36,7 +36,7 @@ st.write("""
 - Handling categorical variables with multiple levels.
 - Balancing the dataset for underrepresented outcomes.
 - Dealing with missing and inconsistent entries.
-- Find the model with the best accuracy for the results.
+- Finding the model with the best accuracy for the results.
 """)
 
 # Exploratory Data Analysis Section
@@ -77,7 +77,7 @@ st.header("Results")
 st.write("""
 ### Quantitative Evaluation for outcome:
 - **Accuracy:** 63% (multiclass classification).
-- **AUC (One-vs-Rest):** 0.76
+- **AUC :** 0.76
          
 ### Quantitative Evaluation for search:
 - **Accuracy:** 77% (multiclass classification).

@@ -30,9 +30,9 @@ st.header("App Information")
 st.write("""
 This app consists of three main pages:
 
-1. **Traffic Stop Outcome Prediction**: Predicts the probability of the result of the traffic stop.
-2. **Traffic Stop Search Prediction**: Predicts whether a search will be conducted during a traffic stop.
-3. **Traffic Stop Information**: Enter the information about your stop to predict the outcomes.
+1. **Data Exploration**: Information about this project and app
+2. **Traffic Stop Outcome Prediction**: Predicts the probability of the result of the traffic stop.
+3. **Traffic Stop Search Prediction**: Predicts whether a search will be conducted during a traffic stop.
          
     Please use the sidebar to navigate through the pages.
 """)
