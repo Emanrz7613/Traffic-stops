@@ -20,7 +20,7 @@ This app predicts whether a search is likely to be conducted during a traffic st
 """)
 
 # Home Page Content
-st.sidebar.success("Navigate to the Stop Information page to enter your information. You can also navigate directly to the model page you would like to use")
+st.sidebar.success("Navigate to the desired page using the sidebar.")
 
 # Stop Information Section
 st.header("App Information")
