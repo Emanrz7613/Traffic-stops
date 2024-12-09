@@ -6,6 +6,7 @@ venv/
 # Ignore data files
 Officer_Traffic_Stops.csv
 preprocessed_Traffic_Stops.csv
+preprocessed_df.csv
 
 # Python cache files
 __pycache__/

@@ -1,41 +1,13 @@
 import streamlit as st
 import pandas as pd
-import pickle
-import torch.nn as nn
+import joblib
+import xgboost as xgb
+import numpy as np
 
-class TrafficStopClassifier(nn.Module):
-    def __init__(self, num_features, num_classes, num_units=64, dropout_rate=0.1):
-        super(TrafficStopClassifier, self).__init__()
-        self.fc1 = nn.Linear(num_features, num_units)
-        self.relu1 = nn.ReLU()
-        self.dropout1 = nn.Dropout(dropout_rate)
-        self.fc2 = nn.Linear(num_units, num_units // 2)
-        self.relu2 = nn.ReLU()
-        self.dropout2 = nn.Dropout(dropout_rate)
-        self.fc3 = nn.Linear(num_units // 2, num_classes)
-
-    def forward(self, x):
-        x = self.fc1(x)
-        x = self.relu1(x)
-        x = self.dropout1(x)
-        x = self.fc2(x)
-        x = self.relu2(x)
-        x = self.dropout2(x)
-        x = self.fc3(x)
-        return x
-
-# Load pre-trained model, preprocessor, label encoder, and class labels
-with open('traffic_stop_model.pkl', 'rb') as file:
-    outcome_model = pickle.load(file)
-
-with open('preprocessor.pkl', 'rb') as file:
-    preprocessor = pickle.load(file)
-
-with open('label_encoder.pkl', 'rb') as file:
-    label_encoder = pickle.load(file)
-
-with open('class_labels.pkl', 'rb') as file:
-    class_labels = pickle.load(file)
+# Load the XGBoost model, encoder, and pre-trained resources
+xgb_model = xgb.Booster()
+xgb_model.load_model('outcome_model.json')
+outcome_encoder = joblib.load('outcome_encoder.joblib')
 
 st.title("Traffic Stop Outcome Prediction")
 st.write("Determine the Probability of Different Results of Your Traffic Stop")
@@ -66,7 +38,7 @@ Officer_Gender = st.sidebar.selectbox("Officer Gender", ["Select an option"] + o
 Reason_for_Stop = st.sidebar.selectbox("Reason for Stop", ["Select an option"] + reasons_for_stop, index=get_selectbox_index(reasons_for_stop, st.session_state.get('Reason_for_Stop', None)))
 CMPD_Division = st.sidebar.selectbox("CMPD Division", ["Select an option"] + cmpd_divisions, index=get_selectbox_index(cmpd_divisions, st.session_state.get('CMPD_Division', None)))
 
-# Store selected features in session state to be used by other pages
+# Store selected features in session state
 st.session_state['Driver_Age'] = Driver_Age if Driver_Age else None
 st.session_state['CMPD_Division'] = CMPD_Division if CMPD_Division != "Select an option" else None
 st.session_state['Reason_for_Stop'] = Reason_for_Stop if Reason_for_Stop != "Select an option" else None
@@ -76,28 +48,51 @@ st.session_state['Officer_Gender'] = Officer_Gender if Officer_Gender != "Select
 st.session_state['Driver_Ethnicity'] = Driver_Ethnicity if Driver_Ethnicity != "Select an option" else None
 
 # Prepare input data for model prediction
-input_features = {
-    'Driver_Age': Driver_Age,
-    'CMPD_Division': CMPD_Division,
+input_data = {
     'Reason_for_Stop': Reason_for_Stop,
-    'Driver_Gender': Driver_Gender,
-    'Driver_Race': Driver_Race,
     'Officer_Gender': Officer_Gender,
-    'Driver_Ethnicity': Driver_Ethnicity
+    'Driver_Race': Driver_Race,
+    'Driver_Ethnicity': Driver_Ethnicity,
+    'Driver_Gender': Driver_Gender,
+    'Driver_Age': Driver_Age,
+    'CMPD_Division': CMPD_Division
 }
 
-# Convert input features to DataFrame
-input_data = pd.DataFrame([input_features])
+# Convert input data to a DataFrame
+input_df = pd.DataFrame([input_data])
 
-# Apply pre-processing using the loaded preprocessor
-input_data_preprocessed = preprocessor.transform(input_data)
+# Ensure categorical features are of the 'category' dtype
+categorical_columns = ['Reason_for_Stop', 'Officer_Gender', 'Driver_Race', 'Driver_Ethnicity', 'Driver_Gender', 'CMPD_Division']
+input_df[categorical_columns] = input_df[categorical_columns].astype('category')
 
-# # Predict
-# if st.button("Predict Outcome Probability"):
-#     probabilities = outcome_model.predict_proba(input_data_preprocessed)[0]
-#     probabilities_percent = [prob * 100 for prob in probabilities]
+# Predict
+if st.button("Predict Outcome Probability"):
+    try:
+        dmatrix_input = xgb.DMatrix(input_df, enable_categorical=True)
+        probabilities = xgb_model.predict(dmatrix_input)
 
-#     # Display class name and percentage probability
-#     st.write("The probabilities of each outcome are:")
-#     for class_label, prob in zip(class_labels, probabilities_percent):
-#         st.write(f"{class_label}: {prob:.2f}%")
+        # Decode class labels
+        if probabilities.ndim == 1:
+            probabilities = np.expand_dims(probabilities, axis=0)
+        predicted_label_index = np.argmax(probabilities[0])
+        predicted_label = outcome_encoder.classes_[predicted_label_index]
+        probabilities_percent = probabilities[0] * 100
+
+        # Display the prediction result for sidebar input
+        st.markdown(f"### Likely Outcome: {predicted_label}")
+        st.write("### Outcome Probabilities:")
+        sorted_indices = np.argsort(-probabilities[0])
+        for idx in sorted_indices:
+            st.write(f"{outcome_encoder.classes_[idx]}: {probabilities_percent[idx]:.2f}%")
+
+    except Exception as e:
+        st.error(f"An error occurred during prediction: {e}")
+
+
+
+
+
+
+
+
+
