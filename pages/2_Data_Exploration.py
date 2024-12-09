@@ -9,10 +9,11 @@ st.title("Traffic Stops: A Data-Driven Exploration")
 # Problem Section
 st.header("The Challenge")
 st.write("""
-- **Key Question:** What factors influence the outcomes of traffic stops in the city?
+- **Key Question:** What factors influence the search/outcomes of traffic stops in the city?
+
 - **Goals:**
-  - Identify trends and patterns in traffic stop outcomes.
-  - Build a predictive model to assess potential outcomes based on specific input factors.
+  - Identify trends and patterns in traffic stop search/outcomes.
+  - Build a predictive model to assess potential search/outcomes based on specific input factors.
   - Provide actionable insights to law enforcement for improving fairness and efficiency.
 """)
 
@@ -23,7 +24,7 @@ st.write("""
 - Publicly available traffic stop data for the city.
 
 ### Key Highlights:
-- **Data Size:** 100,000+ records of traffic stops.
+- **Data Size:** 809972 records of traffic stops.
 - **Features:** 7 predictors, including:
   - *Reason for Stop*
   - *Driver Demographics (Race, Ethnicity, Age, Gender)*
@@ -35,6 +36,7 @@ st.write("""
 - Handling categorical variables with multiple levels.
 - Balancing the dataset for underrepresented outcomes.
 - Dealing with missing and inconsistent entries.
+- Find the model with the best accuracy for the results.
 """)
 
 # Exploratory Data Analysis Section
@@ -42,7 +44,7 @@ st.header("Exploratory Data Analysis")
 st.write("""
 ### Key Observations:
 - *Reason for Stop* is the most critical feature based on initial trends.
-- Certain divisions showed higher frequencies of specific outcomes.
+- Certain divisions showed higher frequencies of specific search/outcomes.
 - Disparities in stop outcomes based on demographic factors prompted hypotheses:
   - **Hypothesis 1:** Reason for Stop will significantly influence outcomes.
   - **Hypothesis 2:** Driver demographics (age, race, ethnicity) will contribute to outcome predictions.
@@ -54,10 +56,15 @@ st.write("""
 # Modeling Section
 st.header("Modeling")
 st.write("""
-### Why LightGBM?
+### Why LightGBM in outcome?
 - Handles categorical data efficiently with minimal preprocessing.
 - Built-in capabilities for imbalanced datasets and multiclass classification.
 - Faster training and scalability compared to alternatives like XGBoost and Neural Networks.
+
+### Why XGBoost in search?
+- Handles categorical data efficiently .
+- Built-in capabilities for imbalanced datasets and multiclass classification.
+- Higher accuracy and AUC values compared to alternatives Logistic Regression, Decision Tree and Neural Networks.
 
 ### Optimization:
 - **Parameter Tuning:** Randomized search to optimize hyperparameters:
@@ -68,18 +75,32 @@ st.write("""
 # Results Section
 st.header("Results")
 st.write("""
-### Quantitative Evaluation:
-- **Accuracy:** 78% (multiclass classification).
-- **AUC (One-vs-Rest):** 0.85.
+### Quantitative Evaluation for outcome:
+- **Accuracy:** 63% (multiclass classification).
+- **AUC (One-vs-Rest):** 0.76
+         
+### Quantitative Evaluation for search:
+- **Accuracy:** 77% (multiclass classification).
+- **AUC (One-vs-Rest):** 0.80      
 
-### Feature Importance:
-1. Reason for Stop (45%)
-2. CMPD Division (13%)
-3. Driver Ethnicity (10%)
-
-### Qualitative Insights:
+### Top 3 Feature Importance for outcome:
+- **Driver Age:** 31%
+- **CMPD Division:** 21%
+- **Reason for Stop:** 16%
+         
+### Top 3 Feature Importance for search:
+- **Reason for stop speeding:** 24%
+- **Reason for Stop Driving While Impaired:** 11%
+- **CMPD Division Metro Division:** 8%
+         
+### Qualitative Insights for outcome:
 - Stronger performance for frequent outcomes (e.g., Citations).
 - Struggles with rare classes (e.g., Arrests).
+- Predictions align with known traffic stop patterns.
+         
+### Qualitative Insights for search:
+- Gender matters for search (e.g., Male higher probability).
+- Struggles with rare classes (e.g., Black, Hispanic with high probability).
 - Predictions align with known traffic stop patterns.
 """)
 
@@ -92,8 +113,9 @@ st.write("""
 - Data-driven approach to improving public trust and safety.
 
 ### Surprises:
-- "Reason for Stop" dominated feature importance.
-- "Driver Age" had limited predictive power compared to other features.
+- "Reason for Stop" dominated feature importance in search.
+- "Driver Age" matters in outcome.
+- "CMPD Division" is significant in both research.
 """)
 
 # Challenges and Learning Opportunities Section
@@ -106,9 +128,10 @@ st.write("""
 ### Learning Opportunities:
 - Leveraging LightGBM’s categorical handling streamlined preprocessing.
 - Feature importance insights reshaped initial assumptions about age.
-
+- Hands-on practice on serveral models(eg: NN, XGBoost, Logistic Regression, etc)
+         
 ### Future Directions:
-- Explore ensemble methods to boost rare class performance.
+- Explore ensemble methods to boost rare class performance(SMOTE oversampling).
 - Incorporate additional data points, like time of day or officer experience, for better context.
 """)
 
