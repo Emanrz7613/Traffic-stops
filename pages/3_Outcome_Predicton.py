@@ -1,13 +1,12 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import xgboost as xgb
+import lightgbm as lgb
 import numpy as np
 
-# Load the XGBoost model, encoder, and pre-trained resources
-xgb_model = xgb.Booster()
-xgb_model.load_model('outcome_model.json')
-outcome_encoder = joblib.load('outcome_encoder.joblib')
+# Load the LightGBM model, encoder, and pre-trained resources
+lgbm_model = lgb.Booster(model_file='lgbm_outcome_model.txt')
+outcome_encoder = joblib.load('lgbm_outcome_encoder.joblib')
 
 st.title("Traffic Stop Outcome Prediction")
 st.write("Determine the Probability of Different Results of Your Traffic Stop")
@@ -30,7 +29,7 @@ officer_genders = ["Male", "Female"]
 driver_ethnicities = ["Non-Hispanic", "Hispanic"]
 
 # Use values from session state to populate sidebar inputs
-Driver_Age = st.sidebar.number_input("Driver Age", min_value=16, max_value=100, value=st.session_state.get('Driver_Age', None), step=1)
+Driver_Age = st.sidebar.number_input("Driver Age", min_value=16, max_value=100, value=st.session_state.get('Driver_Age', 30), step=1)
 Driver_Gender = st.sidebar.selectbox("Driver Gender", ["Select an option"] + driver_genders, index=get_selectbox_index(driver_genders, st.session_state.get('Driver_Gender', None)))
 Driver_Race = st.sidebar.selectbox("Driver Race", ["Select an option"] + driver_races, index=get_selectbox_index(driver_races, st.session_state.get('Driver_Race', None)))
 Driver_Ethnicity = st.sidebar.selectbox("Driver Ethnicity", ["Select an option"] + driver_ethnicities, index=get_selectbox_index(driver_ethnicities, st.session_state.get('Driver_Ethnicity', None)))
@@ -39,7 +38,7 @@ Reason_for_Stop = st.sidebar.selectbox("Reason for Stop", ["Select an option"] +
 CMPD_Division = st.sidebar.selectbox("CMPD Division", ["Select an option"] + cmpd_divisions, index=get_selectbox_index(cmpd_divisions, st.session_state.get('CMPD_Division', None)))
 
 # Store selected features in session state
-st.session_state['Driver_Age'] = Driver_Age if Driver_Age else None
+st.session_state['Driver_Age'] = Driver_Age
 st.session_state['CMPD_Division'] = CMPD_Division if CMPD_Division != "Select an option" else None
 st.session_state['Reason_for_Stop'] = Reason_for_Stop if Reason_for_Stop != "Select an option" else None
 st.session_state['Driver_Gender'] = Driver_Gender if Driver_Gender != "Select an option" else None
@@ -68,15 +67,12 @@ input_df[categorical_columns] = input_df[categorical_columns].astype('category')
 # Predict
 if st.button("Predict Outcome Probability"):
     try:
-        dmatrix_input = xgb.DMatrix(input_df, enable_categorical=True)
-        probabilities = xgb_model.predict(dmatrix_input)
+        probabilities = lgbm_model.predict(input_df)
 
         # Decode class labels
-        if probabilities.ndim == 1:
-            probabilities = np.expand_dims(probabilities, axis=0)
-        predicted_label_index = np.argmax(probabilities[0])
-        predicted_label = outcome_encoder.classes_[predicted_label_index]
         probabilities_percent = probabilities[0] * 100
+        predicted_label_index = np.argmax(probabilities[0])
+        predicted_label = outcome_encoder.inverse_transform([predicted_label_index])[0]
 
         # Display the prediction result for sidebar input
         st.markdown(f"### Likely Outcome: {predicted_label}")
@@ -87,6 +83,7 @@ if st.button("Predict Outcome Probability"):
 
     except Exception as e:
         st.error(f"An error occurred during prediction: {e}")
+
 
 
 
